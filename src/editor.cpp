@@ -1,12 +1,24 @@
 #include "editor.hpp"
 
+#include "gap_buffer.hpp"
+
 SDL_AppResult Editor::Init()
 {
+	// Testing gap_buffer
+	/*buf.insertChar(0, 'c');
+	buf.insertChar(1, 'b');
+	buf.insertChar(2, 'd');
+	buf.insertChar(3, 'e');
+	buf.insertChar(4, 'z');
+	buf.insertChar(3, 'L');*/
+	//buf.checkGapSize(30);
+
 	// Create window
 	if (!SDL_CreateWindowAndRenderer("Hello World", 800, 600, SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE, &m_window, &m_renderer)) {
 		SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
 		return SDL_APP_FAILURE;
 	}
+	SDL_Log("Left String: %s, Right String: %s", buf.getLeftString().c_str(), buf.getRightString().c_str());
 
 	if (TTF_Init() == -1)
 	{
@@ -37,32 +49,28 @@ SDL_AppResult Editor::HandleEvents(SDL_Event* event)
 		return SDL_APP_SUCCESS;
 	}
 
-	// Add an empty string just in case its empty to avoid acces violations
-	if (m_lines.size() < 1)
-	{
-		m_lines.push_back("");
-	}
-
 	// The Key
 	if (event->type == SDL_EVENT_KEY_DOWN)
 	{
 		if (event->key.key == SDLK_RETURN)
 		{
-			m_lines.push_back("");
-			m_currentLine++;
+			// Add enter functionality (probably just add a \n)
+			buf.insertChar(cursorPos.col, '\n');
+			cursorPos.col++;
 		}
 		if (event->key.key == SDLK_BACKSPACE)
 		{
-			if (!m_lines[m_currentLine].empty())
-				m_lines[m_currentLine].pop_back();
+			// Yeah this is non existant as well
+			buf.insertChar(3, 'z');
+			cursorPos.col++;
 		}
 	}
 
 	// The Alphabet on the key
 	if (event->type == SDL_EVENT_TEXT_INPUT)
 	{
-
-		m_lines[m_currentLine] += event->text.text;
+		buf.insertChar(cursorPos.col, *event->text.text);
+		cursorPos.col++;
 	}
 
 	return SDL_APP_CONTINUE;
@@ -82,24 +90,61 @@ SDL_AppResult Editor::Render()
 	SDL_SetRenderDrawColor(m_renderer, 31, 31, 31, 255);
 	SDL_RenderClear(m_renderer);
 	int y = 0;
-	for (const auto& line : m_lines)
+	std::string str{};
+	str += buf.getLeftString();
+	str += buf.getRightString();
+	
+	// no. of \n
+	int i = 0;
+	int lastNewLine = 0;
+	bool done = false;
+	while(!done)
 	{
-		SDL_Surface* surface = TTF_RenderText_Solid(m_font, line.c_str(), line.size(), textColor);
+		std::string s{};
+		if (str.size() <= 0)
+		{
+			done = true;
+		}
+		int newLine = str.find('\n', lastNewLine + 1);
+		if (newLine == std::string::npos) // doesnt exist after lastNewLine
+		{
+			done = true;
+			if (lastNewLine == 0) // never existed 
+				s = str;
+			else
+				s = str.substr(lastNewLine, str.size() - lastNewLine); // 2nd arguement is count instead of pos
+		}
+		else
+		{
+			s = str.substr(lastNewLine, newLine - 1);
+			lastNewLine = newLine;
+		}
+
+		SDL_Surface* surface = TTF_RenderText_Solid(m_font, s.c_str(), s.size(), textColor);
+		if (surface == NULL)
+		{
+			SDL_Log("Error::Editor::Render() surface is NULL, %s", SDL_GetError());
+		}
 
 		SDL_Texture* texture = SDL_CreateTextureFromSurface(m_renderer, surface);
+		if (texture == NULL)
+		{
+			SDL_Log("Error::Editor::Render() texture is NULL, %s", SDL_GetError());
+		}
 
 		SDL_DestroySurface(surface);
 
 		float w, h;
 		SDL_GetTextureSize(texture, &w, &h);
 
-		SDL_FRect rect = { 0, y, w, h };
+		SDL_FRect rect = { 0, y + (i * h), w, h };
 		SDL_RenderTexture(m_renderer, texture, NULL, &rect);
 
 		SDL_DestroyTexture(texture);
 
-		y += h;
+		i++;
 	}
+
 	if (m_texture != NULL)
 	{
 		/*float txtW, txtH;
