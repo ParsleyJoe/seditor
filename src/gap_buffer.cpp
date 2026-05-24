@@ -91,6 +91,13 @@ void GapBuffer::insertChar(int cursorPos, char c)
 	
 }
 
+void GapBuffer::removeChar(int cursorPos)
+{
+	shiftGapTo(cursorPos);
+
+	gapStart--;
+}
+
 std::string GapBuffer::getLeftString()
 {
 	std::string str{""};

@@ -61,8 +61,17 @@ SDL_AppResult Editor::HandleEvents(SDL_Event* event)
 		if (event->key.key == SDLK_BACKSPACE)
 		{
 			// Yeah this is non existant as well
-			buf.insertChar(3, 'z');
-			cursorPos.col++;
+			//buf.insertChar(3, 'z');
+			//cursorPos.col++;
+			if (cursorPos.col <= 0)
+			{
+				cursorPos.col = 0;
+			}
+			else
+			{
+				buf.removeChar(cursorPos.col);
+				cursorPos.col--;
+			}
 		}
 	}
 
@@ -87,8 +96,9 @@ SDL_AppResult Editor::Render()
 	//SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
 	//SDL_RenderDebugText(m_renderer, x, y, message);
 	
-	SDL_SetRenderDrawColor(m_renderer, 31, 31, 31, 255);
+	SDL_SetRenderDrawColor(m_renderer, 31, 31, 31, 255); // background color
 	SDL_RenderClear(m_renderer);
+
 	int y = 0;
 	std::string str{};
 	str += buf.getLeftString();
@@ -112,12 +122,14 @@ SDL_AppResult Editor::Render()
 			if (lastNewLine == 0) // never existed 
 				s = str;
 			else
-				s = str.substr(lastNewLine, str.size() - lastNewLine); // 2nd arguement is count instead of pos
+				s = str.substr(lastNewLine + 1, str.size() - lastNewLine); // 2nd arguement is count instead of pos
 		}
 		else
 		{
-			s = str.substr(lastNewLine, newLine - 1);
-			lastNewLine = newLine;
+			int count = newLine - lastNewLine;
+			int startIndex = (lastNewLine == 0) ? 0 : (lastNewLine + 1);
+			s = str.substr(startIndex, count); // also 2nd arguement is count
+ 			lastNewLine = newLine;
 		}
 
 		SDL_Surface* surface = TTF_RenderText_Solid(m_font, s.c_str(), s.size(), textColor);
@@ -137,7 +149,7 @@ SDL_AppResult Editor::Render()
 		float w, h;
 		SDL_GetTextureSize(texture, &w, &h);
 
-		SDL_FRect rect = { 0, y + (i * h), w, h };
+		SDL_FRect rect = { 10, y + (i * h), w, h };
 		SDL_RenderTexture(m_renderer, texture, NULL, &rect);
 
 		SDL_DestroyTexture(texture);
