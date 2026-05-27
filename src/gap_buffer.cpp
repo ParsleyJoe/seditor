@@ -21,13 +21,13 @@ GapBuffer::GapBuffer(int n_bytes)
 	gapEnd = n_bytes - 1;
 }
 
+GapBuffer::~GapBuffer()
+{
+	delete[] buffer;
+}
+
 void GapBuffer::shiftGapTo(int cursorPos)
 {
-	if (gapStart <= 0)
-	{
-		// can (probably?) start modifying
-		return;
-	}
 	if (gapStart == cursorPos)
 		return;
 
@@ -96,6 +96,8 @@ void GapBuffer::removeChar(int cursorPos)
 	shiftGapTo(cursorPos);
 
 	gapStart--;
+	if (gapStart < 0)
+		gapStart = 0;
 }
 
 std::string GapBuffer::getLeftString()

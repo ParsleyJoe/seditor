@@ -10,8 +10,11 @@
 struct CursorPos
 {
 	int col = 0, row = 0;
+	int bufPos = 0;
 };
 
+int findLineStart(GapBuffer& buf, int cursorPos);
+int findLineEnd(GapBuffer& buf, int cursorPos);
 
 
 class Editor
@@ -26,10 +29,16 @@ public:
 	SDL_Texture* m_texture = NULL;
 	SDL_Color textColor = {255, 255, 255, 255};
 
-	CursorPos cursorPos;
+	// Position relative to the buffer
+	int cursorPos;
+	int prefferedColumn;
 	GapBuffer buf = GapBuffer(16);
 
 	SDL_AppResult Init();
 	SDL_AppResult HandleEvents(SDL_Event* event);
 	SDL_AppResult Render();
+
+	void MoveCursor(SDL_Event* event);
+	void MoveCursorUp();
+
 };

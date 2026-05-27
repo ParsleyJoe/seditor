@@ -11,6 +11,7 @@ class GapBuffer
 public:
 	GapBuffer();
 	GapBuffer(int n_bytes);
+	~GapBuffer();
 
 	void shiftGapTo(int cursorPos);
 	void checkGapSize(int n_required);
