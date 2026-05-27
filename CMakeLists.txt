@@ -30,6 +30,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 # Library Subdirectories
 add_subdirectory(thirdparty/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(thirdparty/SDL_ttf)
+add_subdirectory(thirdparty/nativefiledialog-extended-1.3.0)
 
 # MY_SOURCES is defined to be a list of all the source files for my game 
 # DON'T ADD THE SOURCES BY HAND, they are already added with this macro
@@ -63,4 +64,4 @@ endif()
 
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 
-target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf)
+target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf nfd)

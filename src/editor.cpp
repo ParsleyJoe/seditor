@@ -2,10 +2,10 @@
 
 #include "gap_buffer.hpp"
 
-// ###########
-// !!!!TODO:
-// CODE FULL OF BUGS,
-// MOVING CURSOR.
+// File Opening and saving
+#include <nfd.h>
+#include <filesystem>
+#include <fstream>
 
 
 SDL_AppResult Editor::Init()
@@ -36,6 +36,10 @@ SDL_AppResult Editor::Init()
 		// handle error
 	}
 
+	// Native file dialog Init
+	NFD_Init();
+
+	// SDL Text Input
 	SDL_Rect area = { 0, 0, 800,600 };
 	SDL_SetTextInputArea(m_window, &area, 0);
 	if (!SDL_StartTextInput(m_window))
@@ -56,17 +60,13 @@ SDL_AppResult Editor::HandleEvents(SDL_Event* event)
 	if (event->type == SDL_EVENT_KEY_DOWN)
 	{
 		MoveCursor(event);
-		if (event->key.key == SDLK_RETURN)
+		switch (event->key.key)
 		{
-			// Add enter functionality (probably just add a \n)
+		case SDLK_RETURN:
 			buf.insertChar(cursorPos, '\n');
 			cursorPos++;
-		}
-		if (event->key.key == SDLK_BACKSPACE)
-		{
-			// Yeah this is non existant as well
-			//buf.insertChar(3, 'z');
-			//cursorPos++;
+		break;
+		case SDLK_BACKSPACE:
 			if (cursorPos <= 0)
 			{
 				cursorPos = 0;
@@ -76,8 +76,37 @@ SDL_AppResult Editor::HandleEvents(SDL_Event* event)
 				buf.removeChar(cursorPos);
 				cursorPos--;
 			}
+			break;
+		case SDLK_S:
+			if (event->key.mod & SDL_KMOD_LCTRL)
+			{
+				// Save
+				if (m_file == "") // file opened for the first time
+				{
+					m_file = openFile();
+				}
+
+				if (m_file == "") // user clicked cancel in openFile()
+				{
+					break;
+				}
+				std::fstream file(m_file.c_str(), std::ios::out | std::ios::trunc);
+				if (!file.is_open())
+				{
+					SDL_Log("ERORR::CTRL+S CANNOT SAVE\n");
+				}
+
+				std::string str;
+				str += buf.getLeftString();
+				str += buf.getRightString();
+				file << str;
+
+				SDL_Log("Saved Succesfully\n");
+			}
+			break;
+		default:
+			break;
 		}
-		
 	}
 
 	// The Alphabet on the key
@@ -92,16 +121,6 @@ SDL_AppResult Editor::HandleEvents(SDL_Event* event)
 
 SDL_AppResult Editor::Render()  
 {
-	// Probably want to use this function at some point
-	//SDL_SetRenderScale(m_renderer, scale, scale);
-
-	//// Draw message
-	//SDL_SetRenderDrawColor(m_renderer, 31, 31, 31, 255);
-	//SDL_RenderClear(m_renderer);
-	//SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
-	//SDL_RenderDebugText(m_renderer, x, y, message);
-	
-
 	// Render Text
 	SDL_SetRenderDrawColor(m_renderer, 31, 31, 31, 255); // background color
 	SDL_RenderClear(m_renderer);
@@ -182,13 +201,6 @@ SDL_AppResult Editor::Render()
 	SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 80);
 	SDL_RenderFillRect(m_renderer, &cursorRect);
 
-	if (m_texture != NULL)
-	{
-		/*float txtW, txtH;
-		SDL_GetTextureSize(m_texture, &txtW, &txtH);
-		SDL_FRect dstRect{ 0, 0, txtW, txtH };
-		SDL_RenderTexture(m_renderer, m_texture, NULL, &dstRect);*/
-	}
 	SDL_RenderPresent(m_renderer);
 
 	return SDL_APP_CONTINUE;
@@ -301,4 +313,30 @@ int findLineEnd(GapBuffer& buf, int cursorPos)
 	}
 
 	return lineEnd;
+}
+
+std::string openFile()
+{
+	std::string resultPath{ "" };
+	nfdu8char_t* outpath;
+	nfdu8filteritem_t filters[1] = { {"TextFiles", "txt"}};
+	nfdopendialogu8args_t args = { 0 };
+	args.filterList = filters;
+	args.filterCount = 1;
+	nfdresult_t result = NFD_OpenDialogU8_With(&outpath, &args);
+	if (result == NFD_OKAY)
+	{
+		resultPath = outpath;
+		NFD_FreePathU8(outpath);
+	}
+	else if (result == NFD_CANCEL)
+	{
+		resultPath = "";
+	}
+	else
+	{
+		SDL_Log("ERROR::editor.cpp::openFile(), Cannot open file%s\n", NFD_GetError());
+	}
+
+	return resultPath;
 }

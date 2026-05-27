@@ -15,6 +15,7 @@ struct CursorPos
 
 int findLineStart(GapBuffer& buf, int cursorPos);
 int findLineEnd(GapBuffer& buf, int cursorPos);
+std::string openFile();
 
 
 class Editor
@@ -33,6 +34,9 @@ public:
 	int cursorPos;
 	int prefferedColumn;
 	GapBuffer buf = GapBuffer(16);
+
+	// File path
+	std::string m_file{ "" };
 
 	SDL_AppResult Init();
 	SDL_AppResult HandleEvents(SDL_Event* event);
