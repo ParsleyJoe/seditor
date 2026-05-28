@@ -8,6 +8,9 @@
 #include <fstream>
 
 
+// ## HOLY FRICK DUDE 
+// CURSOR MOVEMENT SUX
+
 SDL_AppResult Editor::Init()
 {
 #ifdef DEBUG
@@ -77,9 +80,18 @@ SDL_AppResult Editor::HandleEvents(SDL_Event* event)
 				cursorPos--;
 			}
 			break;
-		case SDLK_S:
-			if (event->key.mod & SDL_KMOD_LCTRL)
+
+		default:
+			break;
+		}
+
+		// Shortcuts
+		if (event->key.mod & SDL_KMOD_LCTRL)
+		{
+			switch (event->key.key)
 			{
+			case SDLK_S:
+				// --------------------------
 				// Save
 				if (m_file == "") // file opened for the first time
 				{
@@ -90,22 +102,38 @@ SDL_AppResult Editor::HandleEvents(SDL_Event* event)
 				{
 					break;
 				}
-				std::fstream file(m_file.c_str(), std::ios::out | std::ios::trunc);
-				if (!file.is_open())
+				else
 				{
-					SDL_Log("ERORR::CTRL+S CANNOT SAVE\n");
+					std::fstream file(m_file.c_str(), std::ios::out | std::ios::trunc);
+					if (!file.is_open())
+					{
+						SDL_Log("ERORR::CTRL+S CANNOT SAVE\n");
+					}
+
+					std::string str;
+					str += buf.getLeftString();
+					str += buf.getRightString();
+					file << str;
+
+					SDL_Log("Saved Succesfully\n");
 				}
-
-				std::string str;
-				str += buf.getLeftString();
-				str += buf.getRightString();
-				file << str;
-
-				SDL_Log("Saved Succesfully\n");
+				break;
+			case SDLK_V:
+			{
+				char* str = SDL_GetClipboardText();
+				std::string clipboardTxt(str);
+				SDL_free(str);
+				for (int i = 0; i < clipboardTxt.size(); i++)
+				{
+					buf.insertChar(cursorPos, clipboardTxt[i]);
+					cursorPos++;
+				}
 			}
-			break;
-		default:
-			break;
+				break;
+			default:
+				break;
+			}
+
 		}
 	}
 
@@ -158,16 +186,16 @@ SDL_AppResult Editor::Render()
 		}
 
 		SDL_Surface* surface = TTF_RenderText_Solid(m_font, s.c_str(), s.size(), textColor);
-		if (surface == NULL)
+		/*if (surface == NULL)
 		{
 			SDL_Log("Error::Editor::Render() surface is NULL, %s", SDL_GetError());
-		}
+		}*/
 
 		SDL_Texture* texture = SDL_CreateTextureFromSurface(m_renderer, surface);
-		if (texture == NULL)
+		/*if (texture == NULL)
 		{
 			SDL_Log("Error::Editor::Render() texture is NULL, %s", SDL_GetError());
-		}
+		}*/
 
 		SDL_DestroySurface(surface);
 
@@ -208,6 +236,9 @@ SDL_AppResult Editor::Render()
 
 void Editor::MoveCursor(SDL_Event* event)
 {
+	std::string str{};
+	str += buf.getLeftString();
+	str += buf.getRightString();
 	switch (event->key.key)
 	{
 	case SDLK_LEFT:
@@ -227,42 +258,30 @@ void Editor::MoveCursor(SDL_Event* event)
 		break;
 	case SDLK_UP:
 	{
-		// Find Line Start
-		int lineStart = findLineStart(buf, cursorPos);
-		if (lineStart == 0)
-		{
-			break;
-		}
-		// current column
-		int column = cursorPos - lineStart;
-		prefferedColumn = column;
-		// previous Line start
-		int prevLineStart = findLineStart(buf, --lineStart);
-		int lineLength = (lineStart - 1) - prevLineStart;
-		int targetColumn = std::min(prefferedColumn, lineLength);
+		int lineEnd = findNextNewLine(str, cursorPos);
 
-		cursorPos = prevLineStart + targetColumn;
+		int lineStart = findPreviousNewLine(str, cursorPos);
+		int pos = cursorPos - lineStart;
+		cursorPos -= ((pos < 0) ? 0 : pos);
+		cursorPos--;
+
+		if (cursorPos < 0)
+			cursorPos = 0;
+
 	}
 	break;
 	case SDLK_DOWN:
 	{
-		// line start
-		int lineStart = findLineStart(buf, cursorPos);
-		// current Column
-		int column = cursorPos - lineStart;
-		prefferedColumn = column;
-		// find next line start
-		int lineEnd = findLineEnd(buf, cursorPos);
-		std::string str{};
-		str += buf.getLeftString();
-		str += buf.getRightString();
-		if (lineEnd > str.size())
-			break;
-		int nextLineStart = findLineStart(buf, (lineEnd + 2));
-		int lineLength = findLineEnd(buf, nextLineStart) - (nextLineStart - 1);
-		int targetColumn = std::min(prefferedColumn, lineLength - 1);
+		int lineEnd = findNextNewLine(str, cursorPos);
 
-		cursorPos = nextLineStart + targetColumn;
+		int pos = lineEnd - cursorPos;
+		cursorPos += ((pos < 0) ? 0 : pos); // now at the line end
+		cursorPos++; // now at next line
+
+		if (cursorPos > str.size())
+		{
+			cursorPos = str.size();
+		}
 	}
 	break;
 	default:
@@ -270,9 +289,32 @@ void Editor::MoveCursor(SDL_Event* event)
 	}
 }
 
-void Editor::MoveCursorUp()
+int findNextNewLine(std::string str, int cursorPos)
 {
+	int index = cursorPos - 1;
+	if (cursorPos == 0)
+		index = 0;
 
+	while (index < str.size() && str[index] != '\n')
+	{
+		index++;
+	}
+
+	return index;
+}
+
+int findPreviousNewLine(std::string str, int cursorPos)
+{
+	int index = cursorPos - 1;
+	if (cursorPos == 0)
+		index = 0;
+
+	while (index > 0 && str[index] != '\n')
+	{
+		index--;
+	}
+
+	return index;
 }
 
 int findLineStart(GapBuffer& buf, int cursorPos)
@@ -294,26 +336,6 @@ int findLineStart(GapBuffer& buf, int cursorPos)
 	return lineStart;
 }
 
-int findLineEnd(GapBuffer& buf, int cursorPos)
-{
-	std::string str{};
-	str += buf.getLeftString();
-	str += buf.getRightString();
-
-	if (cursorPos >= str.size())
-	{
-		cursorPos = str.size() - 1;
-		return cursorPos; // must already be at line end
-	}
-
-	int lineEnd = cursorPos;
-	while (lineEnd < str.size() && str[lineEnd + 1] != '\n')
-	{
-		lineEnd++;
-	}
-
-	return lineEnd;
-}
 
 std::string openFile()
 {

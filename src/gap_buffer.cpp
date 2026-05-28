@@ -100,6 +100,16 @@ void GapBuffer::removeChar(int cursorPos)
 		gapStart = 0;
 }
 
+char GapBuffer::charAt(int cursorPos)
+{
+	std::string str;
+	str += getLeftString();
+	str += getRightString();
+	if (cursorPos < str.size())
+		return str[cursorPos];
+	return '\n'; // XD
+}
+
 std::string GapBuffer::getLeftString()
 {
 	std::string str{""};

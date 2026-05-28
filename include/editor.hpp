@@ -12,9 +12,10 @@ struct CursorPos
 	int col = 0, row = 0;
 	int bufPos = 0;
 };
+int findNextNewLine(std::string str, int cursorPos);
+int findPreviousNewLine(std::string str, int cursorPos);
 
 int findLineStart(GapBuffer& buf, int cursorPos);
-int findLineEnd(GapBuffer& buf, int cursorPos);
 std::string openFile();
 
 

@@ -17,6 +17,7 @@ public:
 	void checkGapSize(int n_required);
 	void insertChar(int cursorPos, char c);
 	void removeChar(int cursorPos);
+	char charAt(int cursorPos);
 	std::string getLeftString();
 	std::string getRightString();
 };
