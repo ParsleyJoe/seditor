@@ -33,8 +33,7 @@ Text Editor in SDL
 1. Get dependencies
     1. SDL dependencies
         https://wiki.libsdl.org/SDL3/README-linux#build-dependencies
-    2. freetype and GTK
-        on ubuntu/debian
+    2. freetype and GTK(change packages according to distro)
         ```
         sudo apt install libgtk-3-dev libfreetype6-dev
         ```
