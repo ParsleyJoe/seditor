@@ -3,13 +3,15 @@
 !!! This project is not finished !!!
 Text Editor in SDL
 
+![Gif of Working Text Editor](./resources/github/output.gif)
 
 ## Building
 
-Notes about CMake:
-If you are on Ubuntu or Debian-based distros, this project will most probably build fine,
-but for other platforms (Arch, Windows), we need to modify the root CMakeLists file; change the version
-of cmake_minimum_version_required() from 3.0 to 4.0 (provided the installed cmake version is >4.0).
+*Notes about CMake:*
+*The project is configured to work on old and new cmake releases*
+*But if you get some version errors, edit the root CMakeLists.txt file's first line*
+*to reflect your installed cmake version(check by "cmake --version")*
+
 
 ### Windows
 1. Get external modules
