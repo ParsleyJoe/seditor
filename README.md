@@ -26,6 +26,7 @@ Text Editor in SDL
     cd seditor/
     cmake -B build
     cmake --build build
+    ./build/texteditor
 ```
 
 ### Linux
@@ -47,6 +48,7 @@ Text Editor in SDL
     ```
     cmake -B build
     cmake --build build
+    ./build/texteditor
     ```
 
 
