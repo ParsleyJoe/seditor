@@ -9,7 +9,7 @@ Text Editor in SDL
 
 *Notes about CMake:*
 *The project is configured to work on old and new cmake releases*
-*But if you get some version errors, edit the root CMakeLists.txt file's first line*
+*but if you get some version errors, edit the root CMakeLists.txt file's first line*
 *to reflect your installed cmake version(check by "cmake --version")*
 
 
