@@ -35,6 +35,12 @@ of cmake_minimum_version_required() from 3.0 to 4.0 (provided the installed cmak
         ```
         sudo apt install libgtk-3-dev libfreetype6-dev
         ```
+    3. Get Submodules
+        ```
+        chmod +x thirdparty/SDL_ttf/external/download.sh
+        ./thirdparty/SDL_ttf/external/download.sh
+        git submodule update --init --depth 1
+        ```
 2. Build
     ```
     cmake -B build

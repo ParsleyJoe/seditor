@@ -12,6 +12,11 @@ CTestTestfile.cmake
 _deps
 CMakeUserPresets.json
 
+thirdparty/SDL_ttf/external/freetype
+thirdparty/SDL_ttf/external/harfbuzz
+thirdparty/SDL_ttf/external/plutosvg
+thirdparty/SDL_ttf/external/plutovg
+
 # CLion
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
